@@ -6,9 +6,12 @@ export default function GameStartedMessage(props:any){
     const gameStartedBox= {
         border: '1px solid black',
         fontSize: '2em',
-        position: 'absolute',
-        top: '20px',
-        left: '20px'
+        // position: 'absolute',
+        // top: '20px',
+        // left: '20px'
+        marginLeft:'auto',
+        marginRight:'auto',
+        padding:'8px'
     } as React.CSSProperties;
     const GET_GAME_ID= gql`
     query($payload: String!) {
