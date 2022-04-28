@@ -59,6 +59,7 @@ export default  function BattleShip() {
                                     turn: '',
                                     opponentShotHit:false
                                     });
+    let [selectedShip, setSelectedShip] = useState("");
  
     // const POST_GAME_ARRAY = gql`
      useEffect(()=>{
@@ -238,6 +239,7 @@ export default  function BattleShip() {
         transform: `rotate(${gameState.battleShipVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
         zIndex: gameState.gameStarted? -1 : 0
+        // zIndex: -1
     } as React.CSSProperties;
 
     const gridCarrierStyle = {
@@ -256,6 +258,7 @@ export default  function BattleShip() {
         transform: `rotate(${gameState.carrierVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
         zIndex: gameState.gameStarted? -1 : 0
+        // zIndex: -1
     } as React.CSSProperties;
 
     const gridDestroyerStyle = {
@@ -273,6 +276,7 @@ export default  function BattleShip() {
         transform: `rotate(${gameState.destroyerVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
         zIndex: gameState.gameStarted? -1 : 0
+        // zIndex: -1
     } as React.CSSProperties;
 
 
@@ -302,8 +306,8 @@ export default  function BattleShip() {
     }
 
     const manipulateShipPanel = {
-        width: 2 * delta,
-        height: 3 * delta,
+        width: '120px',
+        height: '160px',
         border: '1px solid black',
     }
     const manipulateTitle = {
@@ -389,12 +393,15 @@ export default  function BattleShip() {
 
     function handleBattleshipDragStart(e: MouseEvent) {
         setGameState({...gameState, placingBattleShip:true, placingCarrier:false});
+        setSelectedShip("battleship")
     }
     function handleDestroyerDragStart () {
         setGameState({...gameState, placingDestroyer:true, placingBattleShip:false, placingCarrier:false});
+        setSelectedShip("destroyer")
     }
     function handleCarrierDragStart (){
         setGameState({...gameState, placingCarrier:true, placingBattleShip:false});
+        setSelectedShip("carrier")
     }
     function handleGridCarrierClick () {
         setGameState({...gameState, placingBattleShip:false, placingCarrier:true, placingDestroyer:false});
@@ -406,73 +413,75 @@ export default  function BattleShip() {
         setGameState({...gameState, placingDestroyer:true, placingCarrier:false, placingBattleShip:false});   
     }
 
-    function handleShipDragEnd(e: MouseEvent, ship:string) {
-        // console.log(gameState.placingBattleShip);
-        // setGameState({...gameState, placingBattleShip:false});
-        // debugger
-        // const halfBattleShipWidth = (window.innerHeight*.75 * (4/8))/2;
-        // const halfCarrierWidth = (gridEdgeLength * (carrierLength/numGridEdge))/2;
-        // const halfDestroyerWidth = destroyerLength/2;
-        const halfBattleShipWidth = 164/2;
-        const halfCarrierWidth = 206/2;
-        const halfDestroyerWidth = 80/2;
-        // const gridEdge = (window.innerHeight*.75);
-        // const delta = (window.innerHeight*.75)/8;
-        const gridEdge = (window.innerWidth/2) - 168;
-        // const delta = window.innerWidth + 168;
-        const delta = (window.innerHeight*.75)/8;
+    function handleShipPlacement(e: MouseEvent, ship:string, rowIndex:any, colIndex: any) {
+        let gridX = colIndex;
+        let gridY = rowIndex; 
+        console.log("gridX:",gridX, "gridY:", gridY)
         
         // initialize half ship width & height
-        let halfShipWidth=0;
-        let halfShipHeight=delta/2;
+        let rightShip = 0;
+        let leftShip = 0
+        let upShip = 0;
+        let downShip = 0;
+        // let halfShipHeight=delta/2;
+        let halfShipHeight = 20;
+        let vert = false;
         switch (ship) {
-            case 'battleShip': halfShipWidth = halfBattleShipWidth;
+            case 'battleship': leftShip = 2, rightShip = 2, upShip = 0, downShip = 4,  vert = gameState.battleShipVertical;
                 break;
-            case 'carrier' : halfShipWidth = halfCarrierWidth;
+            case 'carrier' : leftShip = 3, rightShip = 2, upShip = 0, downShip = 5, vert = gameState.carrierVertical;
                 break
-            case 'destroyer' : halfShipWidth = halfDestroyerWidth;
+            case 'destroyer' : leftShip = 1, rightShip = 1, upShip = 0, downShip = 2, vert = gameState.destroyerVertical;
                 break
         }
-    
-        if (
-            // checks if ship is inside the grid to allow placement
-            (e.clientX > ((window.innerWidth - gridEdge)/2 + halfShipWidth) &&
-            e.clientY > ((window.innerHeight - gridEdge)/2 + halfShipHeight))
-            &&  (e.clientX < ((window.innerWidth - gridEdge)/2+ gridEdge - halfShipWidth/2) &&
-            e.clientY < ((window.innerHeight - gridEdge)/2 + gridEdge - halfShipHeight/2))
-           ) {
-               //converts clientX and clientY to grid coordinates e.g.(2,3)
-               const gridX = Math.floor((e.clientX - (window.innerWidth - gridEdge)/2)/delta);
-               const gridY = Math.floor((e.clientY - (window.innerHeight- gridEdge)/2)/delta); 
-               if(ship == 'battleShip') {
-                    const battleShip = [...gameState.battleShip];
-                    for(var i=0; i<battleShip.length; i++) {
-                        //fill in position coordinates
-                        battleShip[i].pos.x = gridX - 2 + i;
-                        battleShip[i].pos.y = gridY;
-                    }
-                    setGameState({...gameState, battleShipsPlaced:true, battleShip:battleShip})
-               } else if(ship == 'carrier') {
-                    const carrier = [...gameState.carrier];
-                    for(var i=0; i<carrier.length; i++) {
-                        carrier[i].pos.x = gridX - 3+i;
-                        carrier[i].pos.y = gridY;
-                    }
-                    setGameState({...gameState, carrierPlaced:true, carrier:carrier})
-                    // console.log(gameState.carrier)
-               } else if (ship == 'destroyer') {
-                    const destroyer = [...gameState.destroyer];
-                    for(var i=0; i<destroyer.length; i++) {
-                        destroyer[i].pos.x = gridX - 1+i;
-                        destroyer[i].pos.y = gridY;
-                    }
-                    setGameState({...gameState, destroyerPlaced:true, destroyer:destroyer})
-                    console.log(gameState.destroyer);
-               }
+        if (!vert){
+            if((gridX - leftShip >= 0 && gridX + rightShip < 9)    &&
+                (gridX >= 0 && gridX < 9) && 
+                (gridY >= 0 && gridY < 9)) { 
 
-           }
-
+                    //check conflicts then place
+                    
+                    placeShip(ship, gridX, gridY)
+                }
+        }else{
+            if((gridY - upShip >= 0 && gridY + downShip < 9)&&
+                (gridX >= 0 && gridX < 9) && 
+                (gridY >= 0 && gridY < 9))
+                {
+                    //check conflicts then place
+                    placeShip(ship, gridX, gridY)
+                }
+        }
     }
+
+    function placeShip(ship: any, gridX:any, gridY:any){
+        if(ship == 'battleship') {
+            const battleShip = [...gameState.battleShip];
+            for(var i=0; i<battleShip.length; i++) {
+                //fill in position coordinates
+                battleShip[i].pos.x = gridX - 2 + i;
+                battleShip[i].pos.y = gridY;
+            }
+            setGameState({...gameState, battleShipsPlaced:true, battleShip:battleShip})
+       } else if(ship == 'carrier') {
+            const carrier = [...gameState.carrier];
+            for(var i=0; i<carrier.length; i++) {
+                carrier[i].pos.x = gridX - 3+i;
+                carrier[i].pos.y = gridY;
+            }
+            setGameState({...gameState, carrierPlaced:true, carrier:carrier})
+            // console.log(gameState.carrier)
+       } else if (ship == 'destroyer') {
+            const destroyer = [...gameState.destroyer];
+            for(var i=0; i<destroyer.length; i++) {
+                destroyer[i].pos.x = gridX - 1+i;
+                destroyer[i].pos.y = gridY;
+            }
+            setGameState({...gameState, destroyerPlaced:true, destroyer:destroyer})
+            console.log(gameState.destroyer);
+       }
+
+   }
 
     function setManipulateTrue() {
         setGameState({...gameState, manipulatingBattleShip: true});
@@ -875,7 +884,23 @@ export default  function BattleShip() {
         // setGameState({...gameState, opponentGrid: newGrid})
     }
 
-
+    function fireOrPlace(e: any, rowIndex:any, colIndex:any, player:string){
+        let shipPlaced = false
+        switch(selectedShip){
+            case 'battleship': shipPlaced = gameState.battleShipsPlaced
+                break;
+            case 'carrier': shipPlaced = gameState.carrierPlaced
+                break;
+            case 'destroyer': shipPlaced = gameState.destroyerPlaced
+                break;
+        }
+        if (shipPlaced){
+            player == "fireAtOpponent" ? fireAtOpponent(rowIndex,colIndex) : fire(rowIndex,colIndex)
+        }else{
+            handleShipPlacement(e, selectedShip, rowIndex, colIndex)
+        }
+        
+    }
 
 
 
@@ -908,7 +933,8 @@ function clicked() {
                                 row.map((col, colIndex)=>{return( <div style={gameState.opponentGrid[rowIndex][colIndex].firedAt ==true?
                                                                                 (gameState.opponentGrid[rowIndex][colIndex].hit==true?
                                                                                     hitStyles : missedStyles):gridElementStyles}
-                                                                        onClick={()=>fireAtOpponent(rowIndex,colIndex)}
+                                                                        // onClick={()=>fireAtOpponent(rowIndex,colIndex)}
+                                                                        onClick={(e)=>fireOrPlace(e, rowIndex,colIndex, "fireAtOpponent")}
                                                                                 
                                                                     ></div>)}) 
                                 )})
@@ -917,7 +943,8 @@ function clicked() {
                             row.map((col, colIndex)=>{return( <div style={gameState.grid[rowIndex][colIndex].firedAt ==true?
                                                                          (gameState.grid[rowIndex][colIndex].hit==true?
                                                                               hitStyles : missedStyles):gridElementStyles}
-                                                                   onClick={()=>fire(rowIndex,colIndex)}
+                                                                //    onClick={()=>fire(rowIndex,colIndex)}
+                                                                onClick={(e)=>fireOrPlace(e, rowIndex,colIndex, "fire")}
                                                                         
                                                               ></div>)}) 
                          )})}
@@ -951,30 +978,26 @@ function clicked() {
                             <div style={shipYardStyles}>
                                 {!gameState.battleShipsPlaced?
                                     <div 
-                                    onDragStart={handleBattleshipDragStart}
-                                    onDragEnd={(e)=>handleShipDragEnd(e, 'battleShip')} 
+                                    onClick={handleBattleshipDragStart}
                                     style={battleshipStyle} 
-                                    draggable='true'
                                 
                                     ></div> : null
                                 }
                                 {!gameState.carrierPlaced? 
-                                    <div draggable='true' 
-                                        onDragStart={handleCarrierDragStart}
-                                        onDragEnd={(e)=>handleShipDragEnd(e, 'carrier')} 
+                                    <div 
+                                    onClick={handleCarrierDragStart}
                                         style={carrierStyle}></div> : null 
                                 }
                                 {!gameState.destroyerPlaced? 
-                                    <div draggable='true' 
-                                    onDragStart={handleDestroyerDragStart}
-                                    onDragEnd={(e)=>handleShipDragEnd(e, 'destroyer')} 
+                                    <div 
+                                    onClick={handleDestroyerDragStart}
                                     style={destroyerStyle}></div> : null 
                                 }
                             </div>
                       :null}
         
                     </div>
-                    <div className='center' style={{width: "20%"}}>
+                    <div className='center' style={{width: "40%"}}>
                     <div style={buttonPanelContainer}> 
                         {(gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer) ?
                             (<div style={manipulateShipPanel}>
