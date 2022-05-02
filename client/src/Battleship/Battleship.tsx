@@ -1,5 +1,4 @@
 import React, {useRef, useEffect, useState, MouseEvent} from 'react';
-
 import battleshipImage from './battleship.svg';
 import carrierImage from './carrier.svg';
 import destroyerImage from './destroyer.svg'
@@ -13,7 +12,8 @@ import  JoinGame  from './JoinGame'
 // import { DEFAULT_MIN_VERSION } from 'tls';
 import GameStartedMessage from './GameStartedMessage';
 import ActiveGameMessage from './ActiveGameMessage';
-
+import { Transition, CSSTransition } from 'react-transition-group';
+import { ENTERED, ENTERING } from 'react-transition-group/Transition';
 
 
 export default  function BattleShip() {
@@ -89,10 +89,6 @@ export default  function BattleShip() {
         
         console.log('gameState uuid',gameState.uuid)
     },[])
-
-    useEffect(()=>{
-
-    })
 
     const POST_GAME_ARRAY= gql`
     mutation($payload:PostGrid!) {
@@ -192,6 +188,12 @@ export default  function BattleShip() {
         // transform: `translateX(${delta*2.5}px)`
     } as React.CSSProperties;
 
+    let [gameGridCursor, setGameGridCursor] = useState({
+        cursor: 'auto'
+    })
+
+    let [firstClickedShips, setFirstClickedShips] = useState({carrier: true, battleship: true, destroyer: true})
+
     const gridElementStyles = {
         width: '100%',
         height: '100%',
@@ -221,7 +223,7 @@ export default  function BattleShip() {
         backgroundSize: 'contain',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-       
+        cursor: 'pointer'
     }
 
     const gridBattleShipStyle = {
@@ -238,8 +240,8 @@ export default  function BattleShip() {
         // backgroundSize: '100% 60%',
         transform: `rotate(${gameState.battleShipVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
-        zIndex: gameState.gameStarted? -1 : 0
-        // zIndex: -1
+        zIndex: gameState.gameStarted? -1 : 0,
+        cursor: 'pointer'
     } as React.CSSProperties;
 
     const gridCarrierStyle = {
@@ -257,8 +259,8 @@ export default  function BattleShip() {
         backgroundRepeat: 'no-repeat', 
         transform: `rotate(${gameState.carrierVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
-        zIndex: gameState.gameStarted? -1 : 0
-        // zIndex: -1
+        zIndex: gameState.gameStarted? -1 : 0,
+        cursor: 'pointer',
     } as React.CSSProperties;
 
     const gridDestroyerStyle = {
@@ -275,8 +277,8 @@ export default  function BattleShip() {
         backgroundRepeat: 'no-repeat',
         transform: `rotate(${gameState.destroyerVertical? 90 : 0}deg) `,
         transformOrigin:'0% 100%',
-        zIndex: gameState.gameStarted? -1 : 0
-        // zIndex: -1
+        zIndex: gameState.gameStarted? -1 : 0,
+        cursor: 'pointer'
     } as React.CSSProperties;
 
 
@@ -290,7 +292,8 @@ export default  function BattleShip() {
         backgroundImage: `url(${carrierImage})`,
         backgroundSize: 'contain',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        cursor: 'pointer'
     }
     const destroyerStyle = {
         // width: window.innerHeight*.75 * (2/8),
@@ -302,21 +305,33 @@ export default  function BattleShip() {
         backgroundImage: `url(${destroyerImage})`,
         // backgroundSize: '100% 60%',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        cursor: 'pointer'
     }
 
-    const manipulateShipPanel = {
-        width: '120px',
-        height: '160px',
-        border: '1px solid black',
-    }
-    const manipulateTitle = {
-        height: '15%',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-    }
+    const shipDefaultStyle = {
+        background: 'black',
+        width: '38px',
+        height: '38px',
+        marginRight: '3px',
+        borderRadius: '10px',
+        cursor:'pointer',
+        border: ''
+      }
+    const shipSelectedStyle = {
+        background: 'black',
+        width: '38px',
+        height: '38px',
+        marginRight: '3px',
+        borderRadius: '10px',
+        cursor:'pointer',
+        border: '3px solid white'
+      }
+    
+    let [selectCarrierStyle, setSelectCarrierStyle] = useState(shipDefaultStyle)
+    let [selectBattleshipStyle, setSelectBattleshipStyle] = useState(shipDefaultStyle)
+    let [selectDestroyerStyle, setSelectDestroyerStyle] = useState(shipDefaultStyle)
+
     const arrowUpContainer = {
         height: '20%',
         width: '100%',
@@ -378,7 +393,6 @@ export default  function BattleShip() {
     }
     const buttonPanelContainer = {
         display: 'flex',
-        cursor:'pointer'
     }
     const hitStyles={
         background: 'rgba(255, 34, 34, 0.5)'
@@ -391,29 +405,67 @@ export default  function BattleShip() {
         fontSize: '2em'
     }
 
-    function handleBattleshipDragStart(e: MouseEvent) {
+    // animations
+    let [inProp, setInProp] = useState(false);
+    const duration = 300;
+
+    const defaultStyle = {
+        transition: `opacity ${duration}ms ease-in-out`,
+        opacity: 0,
+        }
+
+    const transitionStyles = {
+        entering: { opacity: 1 },
+        entered:  { opacity: 1 },
+        exiting:  { opacity: 0 },
+        exited:  { opacity: 0 },
+    };
+
+    function handleBattleShipClick(e: MouseEvent) {
         setGameState({...gameState, placingBattleShip:true, placingCarrier:false});
         setSelectedShip("battleship")
+        hilightBattleship()
     }
-    function handleDestroyerDragStart () {
+    function handleDestroyerClick () {
         setGameState({...gameState, placingDestroyer:true, placingBattleShip:false, placingCarrier:false});
         setSelectedShip("destroyer")
+        highlightDestroyer()
     }
-    function handleCarrierDragStart (){
+    function handleCarrierClick (){
         setGameState({...gameState, placingCarrier:true, placingBattleShip:false});
         setSelectedShip("carrier")
+        highlightCarrier()
     }
     function handleGridCarrierClick () {
         setGameState({...gameState, placingBattleShip:false, placingCarrier:true, placingDestroyer:false});
+        highlightCarrier()
     }
     function handleGridBattleShipClick () {
         setGameState({...gameState, placingBattleShip:true, placingCarrier:false, placingDestroyer:false});
+        hilightBattleship()
     }
     function handleGridDestroyerClick () {
-        setGameState({...gameState, placingDestroyer:true, placingCarrier:false, placingBattleShip:false});   
+        setGameState({...gameState, placingDestroyer:true, placingCarrier:false, placingBattleShip:false});
+        highlightDestroyer()
     }
 
-    function handleShipPlacement(e: MouseEvent, ship:string, rowIndex:any, colIndex: any) {
+    function highlightCarrier(){
+        setSelectCarrierStyle(shipSelectedStyle)
+        setSelectBattleshipStyle(shipDefaultStyle)
+        setSelectDestroyerStyle(shipDefaultStyle)
+    }
+    function highlightDestroyer(){
+        setSelectCarrierStyle(shipDefaultStyle)
+        setSelectBattleshipStyle(shipDefaultStyle)
+        setSelectDestroyerStyle(shipSelectedStyle)
+    }
+    function hilightBattleship(){
+        setSelectCarrierStyle(shipDefaultStyle)
+        setSelectBattleshipStyle(shipSelectedStyle)
+        setSelectDestroyerStyle(shipDefaultStyle)
+    }
+
+    function handleShipPlacement(ship:string, rowIndex:any, colIndex: any) {
         let gridX = colIndex;
         let gridY = rowIndex; 
         console.log("gridX:",gridX, "gridY:", gridY)
@@ -440,7 +492,6 @@ export default  function BattleShip() {
                 (gridY >= 0 && gridY < 9)) { 
 
                     //check conflicts then place
-                    
                     placeShip(ship, gridX, gridY)
                 }
         }else{
@@ -455,6 +506,7 @@ export default  function BattleShip() {
     }
 
     function placeShip(ship: any, gridX:any, gridY:any){
+        setGameGridCursor({cursor: 'auto'})
         if(ship == 'battleship') {
             const battleShip = [...gameState.battleShip];
             for(var i=0; i<battleShip.length; i++) {
@@ -897,7 +949,7 @@ export default  function BattleShip() {
         if (shipPlaced){
             player == "fireAtOpponent" ? fireAtOpponent(rowIndex,colIndex) : fire(rowIndex,colIndex)
         }else{
-            handleShipPlacement(e, selectedShip, rowIndex, colIndex)
+            handleShipPlacement(selectedShip, rowIndex, colIndex)
         }
         
     }
@@ -908,6 +960,22 @@ function clicked() {
     console.log('gameState.gameId', gameState.gameId);
     console.log('gameState.turn', gameState.turn)
 }
+
+useEffect(()=>{
+    if (firstClickedShips.carrier || firstClickedShips.battleship || firstClickedShips.destroyer){
+        switch (selectedShip){
+            case 'battleship': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.battleship = false //add styling here
+                break;
+            case 'carrier': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.carrier = false
+                break;
+            case 'destroyer': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.destroyer = false
+                break;
+        }
+    }
+
+    
+
+}, [selectedShip])
 
     return(
         
@@ -926,7 +994,7 @@ function clicked() {
             </div>
             <br/>
             <div className='centerWrapper'>
-                <div className='center'>
+                <div className='center' style={gameGridCursor}>
                     <div style={gameGridStyles}>
                         {gameState.turn == gameState.uuid ? 
                             gameState.opponentGrid.map((row, rowIndex)=>{return(
@@ -959,97 +1027,175 @@ function clicked() {
                                                                         
                                                              ></div>)}) 
                         )})} */}
-                        {(gameState.battleShipsPlaced && gameState.turn != gameState.uuid)? 
+                        <CSSTransition in={gameState.carrierPlaced} timeout={1000} classNames="fade">
+                            <>
+                              {(gameState.carrierPlaced && gameState.turn != gameState.uuid)?
+                                 <div onClick={handleGridCarrierClick} style={gridCarrierStyle}> </div> : null}
+                            </>
+                        </CSSTransition>
+                        <CSSTransition in={gameState.battleShipsPlaced} timeout={1000} classNames="fade">
+                            <>
+                            {(gameState.battleShipsPlaced && gameState.turn != gameState.uuid)? 
                             <div onClick={handleGridBattleShipClick} style={gridBattleShipStyle}> </div> : null}
-                        {(gameState.carrierPlaced && gameState.turn != gameState.uuid)?
-                             <div onClick={handleGridCarrierClick} style={gridCarrierStyle}> </div> : null}
-                        {(gameState.destroyerPlaced && gameState.turn != gameState.uuid)?
+                            </>
+                        </CSSTransition>
+                        <CSSTransition in={gameState.destroyerPlaced} timeout={1000} classNames="fade">
+                            <>
+                            {(gameState.destroyerPlaced && gameState.turn != gameState.uuid)?
                              <div onClick={handleGridDestroyerClick} style={gridDestroyerStyle}> </div> : null}
+                            </>
+                        </CSSTransition>
+
+                        
+                        
                     </div>
                 </div>
             </div>
             <br/>
-            <div className='centerWrapper'>
+            <div style={{ backgroundColor: '#7171ff', borderRadius: '20px', width: '97%', margin: '0% 1.5% 0% 1.5%' }}>
+                <div className='centerWrapper'>
                     <div className='center' style={{width: "80%"}}>
-                    {!(gameState.battleShipsPlaced && 
-                       gameState.carrierPlaced &&
-                       gameState.destroyerPlaced) ? 
-                    
-                            <div style={shipYardStyles}>
-                                {!gameState.battleShipsPlaced?
-                                    <div 
-                                    onClick={handleBattleshipDragStart}
-                                    style={battleshipStyle} 
+                        {/* {!(gameState.battleShipsPlaced && 
+                        gameState.carrierPlaced &&
+                        gameState.destroyerPlaced) ? 
+                        
+                                <div style={shipYardStyles}>
+                                    {!gameState.carrierPlaced? 
+                                        <div 
+                                        
+                                            style={carrierStyle}></div> : null 
+                                    }
+                                    {!gameState.battleShipsPlaced?
+                                        <div 
+                                        
+                                        style={battleshipStyle} 
+                                    
+                                        ></div> : null
+                                    }
+                                    {!gameState.destroyerPlaced? 
+                                        <div 
+                                        
+                                        style={destroyerStyle}></div> : null 
+                                    }
+                                </div>
                                 
-                                    ></div> : null
-                                }
-                                {!gameState.carrierPlaced? 
-                                    <div 
-                                    onClick={handleCarrierDragStart}
-                                        style={carrierStyle}></div> : null 
-                                }
-                                {!gameState.destroyerPlaced? 
-                                    <div 
-                                    onClick={handleDestroyerDragStart}
-                                    style={destroyerStyle}></div> : null 
-                                }
+                        :null} */}
+
+                        <div className="shipSelection">
+                        <div className="centerWrapper">
+                            <div className="center" style={{fontSize:'20px'}}>Select Ship</div>
+                        </div>
+                        <br />
+                        <div className="centerWrapper">
+                            <div className="center">
+                            <div
+                                className="defaultWrapper"
+                                onClick={handleCarrierClick}
+                            >
+                                <div style={selectCarrierStyle}></div>
+                                <div style={selectCarrierStyle}></div>
+                                <div style={selectCarrierStyle}></div>
+                                <div style={selectCarrierStyle}></div>
+                                <div style={selectCarrierStyle}></div>
                             </div>
-                      :null}
-        
+                            </div>
+                        </div>
+                        <br />
+                        <div className="centerWrapper">
+                            <div className="center">
+                            <div
+                                className="defaultWrapper"
+                                onClick={handleBattleShipClick}
+                            >
+                                <div style={selectBattleshipStyle}></div>
+                                <div style={selectBattleshipStyle}></div>
+                                <div style={selectBattleshipStyle}></div>
+                                <div style={selectBattleshipStyle}></div>
+                            </div>
+                            </div>
+                        </div>
+                        <br />
+                        <div className="centerWrapper">
+                            <div className="center">
+                            <div
+                                className="defaultWrapper"
+                                onClick={handleDestroyerClick}
+                            >
+                                <div style={selectDestroyerStyle}></div>
+                                <div style={selectDestroyerStyle}></div>
+                            </div>
+                            </div>
+                        </div>
+                        <br />
+                        </div>
+            
                     </div>
                     <div className='center' style={{width: "40%"}}>
-                    <div style={buttonPanelContainer}> 
-                        {(gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer) ?
-                            (<div style={manipulateShipPanel}>
-                                <div style={manipulateTitle}>Position Ship</div>
-                                <div style={arrowUpContainer}>
-                                    <FontAwesomeIcon  icon={faArrowUp} 
-                                                    style={arrowStyles}  
-                                                    onClick={moveShipUp}
-                                                    />
-                                </div>
-                                <div style={leftAndRightContainer}>
-                                    <div style={arrowLeftContainer}>
-                                        <FontAwesomeIcon style={arrowStyles} 
-                                                        icon={faArrowLeft} 
-                                                        onClick={moveShipLeft}
+                        <div style={buttonPanelContainer}> 
+                        <CSSTransition in={gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer} timeout={1000} classNames="fade">
+                                <>
+                                {(gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer) ?
+                                (<div className='manipulateShipPanel'>
+                                    <div className='manipulateTitle'>Position Ship</div>
+                                    <div style={arrowUpContainer}>
+                                        <FontAwesomeIcon  icon={faArrowUp} 
+                                                        style={arrowStyles}  
+                                                        onClick={moveShipUp}
                                                         />
                                     </div>
-                                    <div style={arrowRightContainer}>
-                                        <FontAwesomeIcon icon={faArrowRight}
+                                    <div style={leftAndRightContainer}>
+                                        <div style={arrowLeftContainer}>
+                                            <FontAwesomeIcon style={arrowStyles} 
+                                                            icon={faArrowLeft} 
+                                                            onClick={moveShipLeft}
+                                                            />
+                                        </div>
+                                        <div style={arrowRightContainer}>
+                                            <FontAwesomeIcon icon={faArrowRight}
+                                                            style={arrowStyles} 
+                                                            onClick={moveShipRight}
+                                                            />
+                                        </div>
+                                    </div>
+                                    <div style={arrowDownContainer}>
+                                        <FontAwesomeIcon icon={faArrowDown} 
                                                         style={arrowStyles} 
-                                                        onClick={moveShipRight}
-                                                        />
+                                                        onClick={moveShipDown}/>
+                                        </div>
+                                    <div style={rotateLeftAndRightContainer}>
+                                        <div style={rotateLeftContainer}>
+                                            <FontAwesomeIcon icon={faRotateLeft} 
+                                                            style={arrowStyles} 
+                                                            onClick={rotateShip}
+                                                            />
+                                        </div>
+                                        {/* <div style={rotateRightContainer}>
+                                            <FontAwesomeIcon icon={faRotateRight} 
+                                                            style={arrowStyles} />
+                                        </div> */}
                                     </div>
-                                </div>
-                                <div style={arrowDownContainer}>
-                                    <FontAwesomeIcon icon={faArrowDown} 
-                                                    style={arrowStyles} 
-                                                    onClick={moveShipDown}/>
-                                    </div>
-                                <div style={rotateLeftAndRightContainer}>
-                                    <div style={rotateLeftContainer}>
-                                        <FontAwesomeIcon icon={faRotateLeft} 
-                                                        style={arrowStyles} 
-                                                        onClick={rotateShip}
-                                                        />
-                                    </div>
-                                    <div style={rotateRightContainer}>
-                                        <FontAwesomeIcon icon={faRotateRight} 
-                                                        style={arrowStyles} />
-                                    </div>
-                                </div>
-                            </div> ): null
-                        }
-                        
-                        
-                        {(gameState.battleShipsPlaced && 
-                        gameState.carrierPlaced && 
-                        gameState.destroyerPlaced) ?
-                        <button onClick={startGame}>Start Game</button>
-                        :null}
+                                </div> ): null
+                            }
+                                </>
+                            </CSSTransition>
+                            
+                            
+                            
+                        </div>
                     </div>
-                    </div>
+                </div>
+                <div className='centerWrapper'>
+                <CSSTransition in={gameState.battleShipsPlaced && gameState.carrierPlaced && gameState.destroyerPlaced} 
+                            timeout={1000} classNames="fade">
+                            <>
+                            {(gameState.battleShipsPlaced && 
+                            gameState.carrierPlaced && 
+                            gameState.destroyerPlaced) ?
+                            <div className='startGameBtn' onClick={startGame}>Start Game</div>
+                            :null}
+                            </>
+                </CSSTransition>
+                </div>
             </div>
         </div>
     );

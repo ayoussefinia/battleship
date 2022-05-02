@@ -13,6 +13,7 @@
   margin-left: auto;
   margin-right: auto;
 }
+
 .centerWrapper img {
   margin-left: auto;
   margin-right: auto;
@@ -24,17 +25,70 @@
   position: relative;
 }
 
-.horizontalShip {
-  background: black;
-  width: 38px;
-  height: 38px;
-  margin-right: 3px;
+.shipSelection {
+  margin-right: 8px;
+  /* background-color: #7171ff; */
+  padding-top: 10px;
+}
+
+/* animations */
+.fade-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* end animations */
+.manipulateTitle {
+  height: 15%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 17px;
+}
+
+.manipulateShipPanel {
+  width: 120px;
+  height: 160px;
+  margin-top: 10px;
+  border: 2px solid black;
   border-radius: 10px;
 }
 
-.abs{
+.manipulateShipPanel div:not(:first-child) {
+  font-size: 23px;
+}
+
+.startGameBtn {
+  background-color: #c8d1ff;
+  width: 100%;
+  height: 30px;
+  font-size: 22px;
+  margin: 10px;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.abs {
   position: absolute
 }
+
 .App {
   text-align: center;
 }
@@ -69,6 +123,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
