@@ -6,6 +6,7 @@ import {
   gql
 } from "@apollo/client";
 import BattleShip from './Battleship/Battleship';
+
 // const GET_MESSAGES = gql`
 //   query {
 //     messages {

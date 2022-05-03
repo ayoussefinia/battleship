@@ -7,7 +7,8 @@ export default function ActiveGameMessage(props:any) {
         position: 'absolute',
         top: '20px',
         justifySelf: 'center',
-        fontSize: '2em'
+        fontSize: '2em',
+        backgroundColor: 'white',
     } as React.CSSProperties;
     // console.log('props.gamestate.turn',props.gameState.turn)
     // console.log('props.gamestate.turn',props.gameState.uuid)
