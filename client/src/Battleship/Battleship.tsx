@@ -978,16 +978,18 @@ useEffect(()=>{
 }, [selectedShip])
 
     return(
-        
+
         <div  onClick={clicked}>
             {/* {gameState.gameStarted ? <GameStartedMessage uuid={gameState.uuid}/> : <div/>} */}
             <div className='centerWrapper'>
                 <div
                     className='center'
                     >
+                        <br/>
                     <GameStartedMessage uuid={gameState.uuid}
                                 setGameState={(gameId:any, turn:any)=> {
                                 setGameState({...gameState, turn:turn, gameId:gameId, gameStartedBackend:true})}}  />
+                        
                     <ActiveGameMessage gameState={gameState}
                                 fire={(row:any,col:any)=>fire(row,col)}/>
                 </div>
@@ -1027,22 +1029,22 @@ useEffect(()=>{
                                                                         
                                                              ></div>)}) 
                         )})} */}
-                        <CSSTransition in={gameState.carrierPlaced} timeout={1000} classNames="fade">
+                        <CSSTransition in={gameState.carrierPlaced && gameState.turn != gameState.uuid} timeout={1000} 
+                        mountOnEnter={true} unmountOnExit={true} classNames="fade">
                             <>
-                              {(gameState.carrierPlaced && gameState.turn != gameState.uuid)?
-                                 <div onClick={handleGridCarrierClick} style={gridCarrierStyle}> </div> : null}
+                                 <div onClick={handleGridCarrierClick} style={gridCarrierStyle}> </div>
                             </>
                         </CSSTransition>
-                        <CSSTransition in={gameState.battleShipsPlaced} timeout={1000} classNames="fade">
+                        <CSSTransition in={gameState.battleShipsPlaced && gameState.turn != gameState.uuid} timeout={1000} 
+                        mountOnEnter={true} unmountOnExit={true} classNames="fade">
                             <>
-                            {(gameState.battleShipsPlaced && gameState.turn != gameState.uuid)? 
-                            <div onClick={handleGridBattleShipClick} style={gridBattleShipStyle}> </div> : null}
+                            <div onClick={handleGridBattleShipClick} style={gridBattleShipStyle}> </div>
                             </>
                         </CSSTransition>
-                        <CSSTransition in={gameState.destroyerPlaced} timeout={1000} classNames="fade">
+                        <CSSTransition in={gameState.destroyerPlaced && gameState.turn != gameState.uuid} timeout={1000}
+                        mountOnEnter={true} unmountOnExit={true} classNames="fade">
                             <>
-                            {(gameState.destroyerPlaced && gameState.turn != gameState.uuid)?
-                             <div onClick={handleGridDestroyerClick} style={gridDestroyerStyle}> </div> : null}
+                             <div onClick={handleGridDestroyerClick} style={gridDestroyerStyle}> </div>
                             </>
                         </CSSTransition>
 
@@ -1052,151 +1054,125 @@ useEffect(()=>{
                 </div>
             </div>
             <br/>
-            <div style={{ backgroundColor: '#7171ff', borderRadius: '20px', width: '97%', margin: '0% 1.5% 0% 1.5%' }}>
-                <div className='centerWrapper'>
-                    <div className='center' style={{width: "80%"}}>
-                        {/* {!(gameState.battleShipsPlaced && 
-                        gameState.carrierPlaced &&
-                        gameState.destroyerPlaced) ? 
-                        
-                                <div style={shipYardStyles}>
-                                    {!gameState.carrierPlaced? 
-                                        <div 
-                                        
-                                            style={carrierStyle}></div> : null 
-                                    }
-                                    {!gameState.battleShipsPlaced?
-                                        <div 
-                                        
-                                        style={battleshipStyle} 
-                                    
-                                        ></div> : null
-                                    }
-                                    {!gameState.destroyerPlaced? 
-                                        <div 
-                                        
-                                        style={destroyerStyle}></div> : null 
-                                    }
+            <CSSTransition in={!gameState.gameStarted} timeout={1000}
+                        mountOnEnter={true} unmountOnExit={true} classNames="fade">
+                <>
+                    <div style={{ backgroundColor: '#7171ff', borderRadius: '20px', width: '97%', margin: '0% 1.5% 0% 1.5%' }}>
+                        <div className='centerWrapper'>
+                            <div className='center' style={{width: "80%"}}>
+                                <div className="shipSelection">
+                                <div className="centerWrapper">
+                                    <div className="center" style={{fontSize:'20px'}}>Select Ship</div>
                                 </div>
-                                
-                        :null} */}
-
-                        <div className="shipSelection">
-                        <div className="centerWrapper">
-                            <div className="center" style={{fontSize:'20px'}}>Select Ship</div>
+                                <br />
+                                <div className="centerWrapper">
+                                    <div className="center">
+                                    <div
+                                        className="defaultWrapper"
+                                        onClick={handleCarrierClick}
+                                    >
+                                        <div style={selectCarrierStyle}></div>
+                                        <div style={selectCarrierStyle}></div>
+                                        <div style={selectCarrierStyle}></div>
+                                        <div style={selectCarrierStyle}></div>
+                                        <div style={selectCarrierStyle}></div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div className="centerWrapper">
+                                    <div className="center">
+                                    <div
+                                        className="defaultWrapper"
+                                        onClick={handleBattleShipClick}
+                                    >
+                                        <div style={selectBattleshipStyle}></div>
+                                        <div style={selectBattleshipStyle}></div>
+                                        <div style={selectBattleshipStyle}></div>
+                                        <div style={selectBattleshipStyle}></div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div className="centerWrapper">
+                                    <div className="center">
+                                    <div
+                                        className="defaultWrapper"
+                                        onClick={handleDestroyerClick}
+                                    >
+                                        <div style={selectDestroyerStyle}></div>
+                                        <div style={selectDestroyerStyle}></div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <br />
+                                </div>
+                    
+                            </div>
+                            <div className='center' style={{width: "40%"}}>
+                                <div style={buttonPanelContainer}> 
+                                <CSSTransition in={gameState.battleShipsPlaced || gameState.carrierPlaced || gameState.destroyerPlaced} timeout={1000} 
+                                    mountOnEnter={true} unmountOnExit={true} classNames="fade">
+                                        <>
+                                        <div className='manipulateShipPanel'>
+                                            <div className='manipulateTitle'>Position Ship</div>
+                                            <div style={arrowUpContainer}>
+                                                <FontAwesomeIcon  icon={faArrowUp} 
+                                                                style={arrowStyles}  
+                                                                onClick={moveShipUp}
+                                                                />
+                                            </div>
+                                            <div style={leftAndRightContainer}>
+                                                <div style={arrowLeftContainer}>
+                                                    <FontAwesomeIcon style={arrowStyles} 
+                                                                    icon={faArrowLeft} 
+                                                                    onClick={moveShipLeft}
+                                                                    />
+                                                </div>
+                                                <div style={arrowRightContainer}>
+                                                    <FontAwesomeIcon icon={faArrowRight}
+                                                                    style={arrowStyles} 
+                                                                    onClick={moveShipRight}
+                                                                    />
+                                                </div>
+                                            </div>
+                                            <div style={arrowDownContainer}>
+                                                <FontAwesomeIcon icon={faArrowDown} 
+                                                                style={arrowStyles} 
+                                                                onClick={moveShipDown}/>
+                                                </div>
+                                            <div style={rotateLeftAndRightContainer}>
+                                                <div style={rotateLeftContainer}>
+                                                    <FontAwesomeIcon icon={faRotateLeft} 
+                                                                    style={arrowStyles} 
+                                                                    onClick={rotateShip}
+                                                                    />
+                                                </div>
+                                                {/* <div style={rotateRightContainer}>
+                                                    <FontAwesomeIcon icon={faRotateRight} 
+                                                                    style={arrowStyles} />
+                                                </div> */}
+                                            </div>
+                                        </div> 
+                                        </>
+                                    </CSSTransition>
+                                    
+                                    
+                                    
+                                </div>
+                            </div>
                         </div>
-                        <br />
-                        <div className="centerWrapper">
-                            <div className="center">
-                            <div
-                                className="defaultWrapper"
-                                onClick={handleCarrierClick}
-                            >
-                                <div style={selectCarrierStyle}></div>
-                                <div style={selectCarrierStyle}></div>
-                                <div style={selectCarrierStyle}></div>
-                                <div style={selectCarrierStyle}></div>
-                                <div style={selectCarrierStyle}></div>
-                            </div>
-                            </div>
+                        <div className='centerWrapper'>
+                        <CSSTransition in={gameState.battleShipsPlaced && gameState.carrierPlaced && gameState.destroyerPlaced} 
+                                    timeout={1000}  mountOnEnter={true} unmountOnExit={true} classNames="fade">
+                                    <>
+                                        <div className='startGameBtn' onClick={startGame}>Start Game</div>                           
+                                    </>
+                        </CSSTransition>
                         </div>
-                        <br />
-                        <div className="centerWrapper">
-                            <div className="center">
-                            <div
-                                className="defaultWrapper"
-                                onClick={handleBattleShipClick}
-                            >
-                                <div style={selectBattleshipStyle}></div>
-                                <div style={selectBattleshipStyle}></div>
-                                <div style={selectBattleshipStyle}></div>
-                                <div style={selectBattleshipStyle}></div>
-                            </div>
-                            </div>
-                        </div>
-                        <br />
-                        <div className="centerWrapper">
-                            <div className="center">
-                            <div
-                                className="defaultWrapper"
-                                onClick={handleDestroyerClick}
-                            >
-                                <div style={selectDestroyerStyle}></div>
-                                <div style={selectDestroyerStyle}></div>
-                            </div>
-                            </div>
-                        </div>
-                        <br />
-                        </div>
-            
                     </div>
-                    <div className='center' style={{width: "40%"}}>
-                        <div style={buttonPanelContainer}> 
-                        <CSSTransition in={gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer} timeout={1000} classNames="fade">
-                                <>
-                                {(gameState.placingBattleShip || gameState.placingCarrier || gameState.placingDestroyer) ?
-                                (<div className='manipulateShipPanel'>
-                                    <div className='manipulateTitle'>Position Ship</div>
-                                    <div style={arrowUpContainer}>
-                                        <FontAwesomeIcon  icon={faArrowUp} 
-                                                        style={arrowStyles}  
-                                                        onClick={moveShipUp}
-                                                        />
-                                    </div>
-                                    <div style={leftAndRightContainer}>
-                                        <div style={arrowLeftContainer}>
-                                            <FontAwesomeIcon style={arrowStyles} 
-                                                            icon={faArrowLeft} 
-                                                            onClick={moveShipLeft}
-                                                            />
-                                        </div>
-                                        <div style={arrowRightContainer}>
-                                            <FontAwesomeIcon icon={faArrowRight}
-                                                            style={arrowStyles} 
-                                                            onClick={moveShipRight}
-                                                            />
-                                        </div>
-                                    </div>
-                                    <div style={arrowDownContainer}>
-                                        <FontAwesomeIcon icon={faArrowDown} 
-                                                        style={arrowStyles} 
-                                                        onClick={moveShipDown}/>
-                                        </div>
-                                    <div style={rotateLeftAndRightContainer}>
-                                        <div style={rotateLeftContainer}>
-                                            <FontAwesomeIcon icon={faRotateLeft} 
-                                                            style={arrowStyles} 
-                                                            onClick={rotateShip}
-                                                            />
-                                        </div>
-                                        {/* <div style={rotateRightContainer}>
-                                            <FontAwesomeIcon icon={faRotateRight} 
-                                                            style={arrowStyles} />
-                                        </div> */}
-                                    </div>
-                                </div> ): null
-                            }
-                                </>
-                            </CSSTransition>
-                            
-                            
-                            
-                        </div>
-                    </div>
-                </div>
-                <div className='centerWrapper'>
-                <CSSTransition in={gameState.battleShipsPlaced && gameState.carrierPlaced && gameState.destroyerPlaced} 
-                            timeout={1000} classNames="fade">
-                            <>
-                            {(gameState.battleShipsPlaced && 
-                            gameState.carrierPlaced && 
-                            gameState.destroyerPlaced) ?
-                            <div className='startGameBtn' onClick={startGame}>Start Game</div>
-                            :null}
-                            </>
-                </CSSTransition>
-                </div>
-            </div>
+                </>
+            </CSSTransition>
         </div>
     );
     
