@@ -36,7 +36,7 @@ export default function ActiveGameMessage(props:any) {
             // if(props.gameState.turn ==)
         if(data!= undefined) {
             if (data.getOpposingShotCoordinate.row != null) {
-                props.fire(data.getOpposingShotCoordinate.row,data.getOpposingShotCoordinate.column)
+                props.fire(data.getOpposingShotCoordinate.row,data.getOpposingShotCoordinate.column, 'myGrid')
                 stopPolling();
             }
         }
@@ -65,12 +65,12 @@ export default function ActiveGameMessage(props:any) {
       }
 
 
-      console.log('get opposing shot data called, data:', data, 'coordinate asker:', coordinateAsker);
+    //   console.log('get opposing shot data called, data:', data, 'coordinate asker:', coordinateAsker);
     if(data!= undefined && data.getOpposingShotCoordinate != null) {
         if(data.getOpposingShotCoordinate.row == null){
             if(props.gameState.turn != '' && props.gameState.uuid != '' && props.gameState.gameStarted) {
                 if(props.gameState.turn == props.gameState.uuid) {
-                    return <div style={activeGameMessageStyle}>your turn</div>
+                    return <div style={activeGameMessageStyle}>your turn, Click the grid position you want to attack</div>
                 }
                 if (props.gameState.turn != props.gameState.uuid) {
                     return <div style={activeGameMessageStyle}>their turn</div>

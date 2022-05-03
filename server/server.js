@@ -69,7 +69,19 @@ type Coordinate {
 }
 
 input ShotResult {
+    hit: Boolean!
+    gameId: String!
+    uuid: String!
+}
+
+type DidShotHit {
+    row: Int
+    column: Int
     hit: Boolean
+}
+type TurnSwitch {
+    turn: String
+    turnCount: Int
 }
 
 type StartGameObject {
@@ -87,6 +99,8 @@ type Query {
     messages: [Message!]
     getGameId(payload: String!): StartGameObject
     getOpposingShotCoordinate(payload: CoordinateAsker) : Coordinate
+    getShotResult(payload: CoordinateAsker): DidShotHit! 
+    getTurnSwitch(payload:CoordinateAsker): TurnSwitch!
 }
 
 type Mutation {
@@ -94,11 +108,50 @@ type Mutation {
     postGameArray(payload: PostGrid): Boolean
     postUUID(payload: String!): ID!
     postFireAtOpponent(payload: FireCoordinate!): Boolean
+    postShotResult(payload: ShotResult!):Boolean
+    switchTurn(payload: CoordinateAsker): Boolean
 }
 `;
 
 const resolvers = {
 Query: {
+    getTurnSwitch:(parent,{payload})=>{
+        console.log('get turn switch called: ', payload)
+        for(var i=0; i<activeGames.length; i++) { 
+            if(activeGames[i].id == payload.gameId) {
+                const turnSwitch = {
+                    turn: activeGames[i].turn,
+                    turnCount: activeGames[i].turnIterator
+                }
+            }
+        }
+    }
+    ,
+    getShotResult: (parent, {payload})=> {
+        console.log('get shot result called payload: ', payload)
+        for(var i=0; i<activeGames.length; i++) { 
+            if(activeGames[i].id == payload.gameId) {
+                console.log('inside first if********')
+                if(payload.uuid == activeGames[i].turn){
+                    console.log('inside second if********')
+                    const didShotHit= {
+                        row: activeGames[i].lastAttack.row,
+                        column: activeGames[i].lastAttack.column,
+                        hit: activeGames[i].lastAttackResult.hit
+                    }
+                    console.log('return result:', didShotHit)
+                    return didShotHit;
+                }
+
+            }
+        }
+        const didShotHit= {
+            row: null,
+            column: null,
+            hit: null
+        }
+        return didShotHit; 
+    },
     getOpposingShotCoordinate: (parent, {payload})=> {
         
         for(var i=0; i<activeGames.length; i++) {
@@ -177,20 +230,55 @@ Query: {
     }
 },
 Mutation: {
+    switchTurn: (parent, {payload})=> {
+        console.log('*****switch turn called payload payload',payload)
+        for(var i=0; i<activeGames.length; i++) {
+            if (activeGames[i].id == payload.gameId) { 
+                activeGames[i]={
+                    player1: activeGames[i].player1,
+                    player2: activeGames[i].player2,
+                    id: activeGames[i].id,
+                    gameOver:false,
+                    turn: activeGames[i].player1 ? activeGames[i].player2 : activeGames[i].player1,
+                    lastAttack: {
+                        row:null,
+                        column:null
+                    },
+                    lastAttackResult: {
+                        hit: null
+                    },
+                    turnIterator:activeGames[i].turnIterator++
+                }
+                return true
+            }
+            
+        }
+    },
+    postShotResult: (parent, {payload}) => {
+       
+        for(var i=0; i<activeGames.length; i++) {
+            if (activeGames[i].id == payload.gameId) {
+                activeGames[i].lastAttackResult.hit =payload.hit;
+                console.log('post shot result called last attack:', activeGames[i])
+                // console.log('******post shot result called game update:',activeGames[i])
+            }
+        }
+       
+    },
     postFireAtOpponent: (parent, {payload})=>{
-        
         const gameId =payload.gameId;
         const row= payload.row;
         const column =payload.column;
         const uuid = payload.uuid;
-        let grid;
+        // let grid;
         for(var i=0; i<activeGames.length; i++) {
             if (activeGames[i].id == gameId) {
-                console.log('found game', activeGames[i])
+                
                 activeGames[i].lastAttack ={
                     row: row,
                     column:column
                 }
+                console.log('post shot', activeGames[i])
                 // if(uuid == activeGames[i].player1) {
               
             console.log('fire at opponent calle last Attack', activeGames[i].lastAttack)      
@@ -200,7 +288,7 @@ Mutation: {
                 // }
 
             }
-            console.log('fire at opponent grid:',grid)
+            // console.log('fire at opponent grid:',grid)
         }
         
     },
@@ -236,24 +324,12 @@ Mutation: {
             const player2 = payload;
             const id =Math.random().toString().slice(2, 15);
             
-            let initialGrid = Array(8).fill(null).map(row => new Array(8).fill(null))
-            for(var i =0; i<8;i++){
-                for(var j=0; j<8; j++){
-                    let  obj={column:0, row:0, hit:false, firedAt:false}
-                    obj.row = i;
-                    obj.column=j
-                    initialGrid[i][j] = obj
-                }
-            }
-  
 
 
             const game={
                 player1: player1,
                 player2: player2,
                 id: id,
-                player1Grid:initialGrid,
-                player2Grid:initialGrid,
                 gameOver:false,
                 turn: player1,
                 lastAttack: {
@@ -261,7 +337,7 @@ Mutation: {
                     column:null
                 },
                 lastAttackResult: {
-                    hit: false
+                    hit: null
                 },
                 turnIterator:0
             }
@@ -276,21 +352,22 @@ Mutation: {
 
     }
 },
-Subscription: {
-    messages:  {
-       subscribe: () => {
-           return pubsub.asyncIterator(['MESSAGES'])
-        }
-    },
-    message: {
-        subscribe: () => pubsub.asyncIterator('MESSAGE_CREATED')
-    },
+// Subscription: {
+//     messages:  {
+//        subscribe: () => {
+//            return pubsub.asyncIterator(['MESSAGES'])
+//         }
+//     },
+//     message: {
+//         subscribe: () => pubsub.asyncIterator('MESSAGE_CREATED')
+//     },
 
-    postCreated: {
-        subscribe: () => pubsub.asyncIterator(['POST_CREATED']),
-    }
+//     postCreated: {
+//         subscribe: () => pubsub.asyncIterator(['POST_CREATED']),
+//     }
  
-}}
+// }
+}
 
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 

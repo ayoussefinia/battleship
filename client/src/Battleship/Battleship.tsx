@@ -13,6 +13,9 @@ import  JoinGame  from './JoinGame'
 // import { DEFAULT_MIN_VERSION } from 'tls';
 import GameStartedMessage from './GameStartedMessage';
 import ActiveGameMessage from './ActiveGameMessage';
+import LongPoll from './LongPoll';
+// import ShotResultPoll from './ShotResultPoll';
+// import SwitchTurnPoll from './SwitchTurnPoll';
 
 
 
@@ -57,10 +60,13 @@ export default  function BattleShip() {
                                     uuid: '' ,
                                     gameId: '',
                                     turn: '',
-                                    opponentShotHit:false
+                                    opponentShotHit:false,
+                                    listentingFireResult:false,
+                                    switchingTurn:false,
+                                    turnCount:0
                                     });
  
-    // const POST_GAME_ARRAY = gql`
+
      useEffect(()=>{
    
         let gameGrid = Array(numGridEdge).fill(null).map(row => new Array(numGridEdge).fill(null))
@@ -89,9 +95,7 @@ export default  function BattleShip() {
         console.log('gameState uuid',gameState.uuid)
     },[])
 
-    useEffect(()=>{
 
-    })
 
     const POST_GAME_ARRAY= gql`
     mutation($payload:PostGrid!) {
@@ -110,54 +114,30 @@ export default  function BattleShip() {
     }
     `
 
+    const POST_OPPONENT_SHOT_RESULT=gql`
+    mutation($payload: ShotResult!) {
+        postShotResult(payload: $payload)
+    }
+    `
+
+
     const GET_GAME_ID= gql`
     query($payload: String!) {
         getGameId(payload: $payload)
     }
     `
     // const hello = {'hello': "hello"} 
-    const send = ()=> {
+    // const send = ()=> {
       
-    }
+    // }
 
 
-    // const [postUUID, { data, loading, error }] = useMutation(POST_UUID);
-    // console.log('post uuid data:', data);
-    // // Pass mutation to useMutation
+
     const [postUUID] = useMutation(POST_UUID);
     const [postGameArray] = useMutation(POST_GAME_ARRAY);
     const [postFireAtOpponent] = useMutation(POST_FIRE_AT_OPPONENT);
-
-    // const GameStartedMessage = ()=> {
-    //     const { loading, error, data } = useQuery(GET_GAME_ID, {
-    //         variables: { payload: gameState.uuid },
-    //         pollInterval: 5000,
-    //         notifyOnNetworkStatusChange: true
-    //       });
-
-    //       if(error) {
-    //           console.log('query error:',error);
-    //       }
-    //       if(loading) {
-    //           console.log('query loading: ', loading)
-    //       }
-    //       if(data != null) {
-    //           console.log('game data', data)
-    //         // if(data.gameId != null) {
-    //         //     return <div style={gameStartedBox}>Game Started</div>
-    //         // }
-  
-    //         // else {
-    //         //     console.log(data)
-    //         // }
-    //       }
-    //       return <div style={gameStartedBox}>Waiting for Another Player to Join</div>
-    // }
-
+    const [postShotResult] = useMutation(POST_OPPONENT_SHOT_RESULT);
     
-    // console.log(data)
-   
-
 
 
     const numGridEdge =8;
@@ -751,41 +731,41 @@ export default  function BattleShip() {
     }
 
     async function startGame() {
-        const element = {
-            row: 0,
-            column:0,
-            hit: true,
-            firedAt: true
-        }
-        let obj2 = {data: [{}]}
-        for(var i=0; i<numGridEdge; i++) {
-            let obj1 ={data: [{}]};
-            obj1.data = gameState.grid[i]
-            obj2.data.push(obj1) ;
-        }
-        obj2.data.shift();
+        // const element = {
+        //     row: 0,
+        //     column:0,
+        //     hit: true,
+        //     firedAt: true
+        // }
+        // let obj2 = {data: [{}]}
+        // for(var i=0; i<numGridEdge; i++) {
+        //     let obj1 ={data: [{}]};
+        //     obj1.data = gameState.grid[i]
+        //     obj2.data.push(obj1) ;
+        // }
+        // obj2.data.shift();
 
-        let postObject = {
-            grid: obj2,
-            uuid: gameState.uuid,
-            gameId: gameState.gameId
-        }
-        console.log('post object', postObject)
+        // let postObject = {
+        //     grid: obj2,
+        //     uuid: gameState.uuid,
+        //     gameId: gameState.gameId
+        // }
+        // console.log('post object', postObject)
         // consol.log(obj2)
         // const arr2 =[arr1]
         // const uuid = uuidv4();
         // console.log('uuid:', JSON.stringify(uuid))
         // postUUID({variables: {payload: uuid}});
-        // }
-        await postUUID({variables: {payload: gameState.uuid}})
-        await postGameArray({
-            variables: {payload: postObject}
-        })
+
+        postUUID({variables: {payload: gameState.uuid}})
+        // await postGameArray({
+        //     variables: {payload: postObject}
+        // })
         setGameState({...gameState, gameStarted: true})
         
     }
 
-    function fire(row:any, col:any) {
+    function fire(row:any, col:any,gridType:any) {
         let opponentShotHit= false;
         console.log('fired')
         const newGrid = gameState.grid;
@@ -810,9 +790,30 @@ export default  function BattleShip() {
                 }
             }
             newGrid[row][col]= newObj;
-            console.log(newGrid)
+            // console.log(newGrid)
         }
-        setGameState({...gameState, grid: newGrid, opponentShotHit: opponentShotHit})
+
+
+
+        if(gridType == 'myGrid') {
+            setGameState({...gameState, grid: newGrid, opponentShotHit: opponentShotHit})
+        }
+        if(gridType =='opponentGrid') {
+            setGameState({...gameState, opponentGrid: newGrid, opponentShotHit: opponentShotHit})
+        }
+         
+
+        const shotResult = {gameId: gameState.gameId, uuid: gameState.uuid, hit: opponentShotHit}
+        // postShotResult({variables: {payload: shotResult}})
+    }
+   function resultFire(row:any, col:any, hit:any) {
+        const newGrid = gameState.opponentGrid;
+        let newObj = {row:row, column:col, firedAt:true, hit: false};
+        if (hit==true) {
+            newObj.hit =true;
+        }
+        newGrid[row][col] =newObj;
+        setGameState({...gameState, opponentGrid:newGrid})
     }
 
     function fireAtOpponent(row:any, col:any) {
@@ -824,7 +825,8 @@ export default  function BattleShip() {
             uuid: gameState.uuid
         }
         
-        postFireAtOpponent({variables: {payload: fireCoordinate}})
+        // postFireAtOpponent({variables: {payload: fireCoordinate}})
+        setGameState({...gameState, listentingFireResult: true})
         // console.log('fired at opponent')
         // const newGrid = gameState.opponentGrid;
         // let newObj = {row:row, column:col, firedAt:true, hit: false}
@@ -851,23 +853,32 @@ export default  function BattleShip() {
     }
 
 
+//Hi everyone!
+//hello!
 
-
-
-function clicked() {
-    console.log('gameState.gameId', gameState.gameId);
-    console.log('gameState.turn', gameState.turn)
-}
 
     return(
         
-        <div  style={containerStyles} onClick={clicked}>
+        <div  style={containerStyles} >
             {/* {gameState.gameStarted ? <GameStartedMessage uuid={gameState.uuid}/> : <div/>} */}
             <GameStartedMessage uuid={gameState.uuid}
                                 setGameState={(gameId:any, turn:any)=> {
                                 setGameState({...gameState, turn:turn, gameId:gameId, gameStartedBackend:true})}}  />
-            <ActiveGameMessage gameState={gameState}
-                                fire={(row:any,col:any)=>fire(row,col)}/>                      
+            <LongPoll/>
+            {/* <ActiveGameMessage gameState={gameState}
+                                fire={(row:any,col:any,gridType: any)=>fire(row,col,gridType)}/> */}
+            {/* <ShotResultPoll 
+                            gameId={gameState.gameId}
+                            uuid={gameState.uuid}
+                            listentingFireResult={gameState.listentingFireResult}
+                            // gameState={gameState}
+                            resultFire={(row:any,col:any,hit:any)=>resultFire(row,col,hit)}
+                            // switchTurn={(variables:any)=>switchTurn(variables)}
+                            updateState={()=>{setGameState({...gameState, switchingTurn:true, listentingFireResult:false})}}
+            /> 
+            <SwitchTurnPoll gameState={gameState}
+                            updateState={(turn:any,turnCount:any)=>{setGameState({...gameState, turn:turn,turnCount:turnCount})}}
+            />                      */}
             <div style={gameGridStyles}>
                 {gameState.turn == gameState.uuid ? 
                     gameState.opponentGrid.map((row, rowIndex)=>{return(
@@ -883,7 +894,7 @@ function clicked() {
                     row.map((col, colIndex)=>{return( <div style={gameState.grid[rowIndex][colIndex].firedAt ==true?
                                                                  (gameState.grid[rowIndex][colIndex].hit==true?
                                                                       hitStyles : missedStyles):gridElementStyles}
-                                                           onClick={()=>fire(rowIndex,colIndex)}
+                                                           
                                                           
                                                       ></div>)}) 
                  )})}
@@ -964,7 +975,7 @@ function clicked() {
                             onDragStart={handleBattleshipDragStart}
                             onDragEnd={(e)=>handleShipDragEnd(e, 'battleShip')} 
                             style={battleshipStyle} 
-                            draggable='true'
+                            // draggable='true'
             
                             ></div> : null
                         }

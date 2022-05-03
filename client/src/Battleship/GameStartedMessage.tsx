@@ -23,6 +23,8 @@ export default function GameStartedMessage(props:any){
         pollInterval: 5000,
         notifyOnNetworkStatusChange: true,
         onCompleted:  ()=> {
+          console.log('************inside on completed')
+          console.log('game data: ',data)
           if(data != undefined && 
             data!= null &&
             data.getGameId.gameId != 'none' 
@@ -40,7 +42,9 @@ export default function GameStartedMessage(props:any){
       // if(loading) {
       //     console.log('query loading: ', loading)
       // }
-      if(data != undefined && data!= null) {
+      if(data != undefined && data.getGameId!= null) {
+        // console.log('**************indide body')
+        
         //   console.log('game data', data)
           if(data.getGameId.gameId == 'none') {
             return <div style={gameStartedBox}>Place your ships them Click "start game"</div>
