@@ -11,7 +11,8 @@ export default function GameStartedMessage(props:any){
         // left: '20px'
         marginLeft:'auto',
         marginRight:'auto',
-        padding:'8px'
+        padding:'8px',
+        backgroundColor: 'white',
     } as React.CSSProperties;
     const GET_GAME_ID= gql`
     query($payload: String!) {

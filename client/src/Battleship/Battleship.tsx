@@ -12,8 +12,9 @@ import  JoinGame  from './JoinGame'
 // import { DEFAULT_MIN_VERSION } from 'tls';
 import GameStartedMessage from './GameStartedMessage';
 import ActiveGameMessage from './ActiveGameMessage';
-import { Transition, CSSTransition } from 'react-transition-group';
-import { ENTERED, ENTERING } from 'react-transition-group/Transition';
+import { CSSTransition } from 'react-transition-group';
+import './border.scss'
+
 
 
 export default  function BattleShip() {
@@ -176,7 +177,7 @@ export default  function BattleShip() {
         // height: window.innerHeight * .75,
         height: '336px',
         width: '336px',
-        border: '1px solid red  ',
+        // border: '1px solid red  ',
         display: 'grid', 
         gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
         gridTemplateRows: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
@@ -184,8 +185,9 @@ export default  function BattleShip() {
         // position:'absolute',
         // top: '100px',
         marginLeft: 'auto',
-        marginRight: 'auto'
+        marginRight: 'auto',
         // transform: `translateX(${delta*2.5}px)`
+        backgroundColor:'white',
     } as React.CSSProperties;
 
     let [gameGridCursor, setGameGridCursor] = useState({
@@ -325,12 +327,16 @@ export default  function BattleShip() {
         marginRight: '3px',
         borderRadius: '10px',
         cursor:'pointer',
-        border: '3px solid white'
+        // border: '3px solid #74acd6'
+        border: '4px solid',
+        borderImage: 'linear-gradient(0deg, #0000ff 0%, #878bff 100%)',
+        borderImageSlice: '1'
       }
+
     
-    let [selectCarrierStyle, setSelectCarrierStyle] = useState(shipDefaultStyle)
-    let [selectBattleshipStyle, setSelectBattleshipStyle] = useState(shipDefaultStyle)
-    let [selectDestroyerStyle, setSelectDestroyerStyle] = useState(shipDefaultStyle)
+    let [selectCarrierStyle, setSelectCarrierStyle] = useState('shipDefaultStyle')
+    let [selectBattleshipStyle, setSelectBattleshipStyle] = useState('shipDefaultStyle')
+    let [selectDestroyerStyle, setSelectDestroyerStyle] = useState('shipDefaultStyle')
 
     const arrowUpContainer = {
         height: '20%',
@@ -421,19 +427,16 @@ export default  function BattleShip() {
         exited:  { opacity: 0 },
     };
 
-    function handleBattleShipClick(e: MouseEvent) {
+    function handleBattleShipClick() {
         setGameState({...gameState, placingBattleShip:true, placingCarrier:false});
-        setSelectedShip("battleship")
         hilightBattleship()
     }
     function handleDestroyerClick () {
         setGameState({...gameState, placingDestroyer:true, placingBattleShip:false, placingCarrier:false});
-        setSelectedShip("destroyer")
         highlightDestroyer()
     }
     function handleCarrierClick (){
         setGameState({...gameState, placingCarrier:true, placingBattleShip:false});
-        setSelectedShip("carrier")
         highlightCarrier()
     }
     function handleGridCarrierClick () {
@@ -450,19 +453,22 @@ export default  function BattleShip() {
     }
 
     function highlightCarrier(){
-        setSelectCarrierStyle(shipSelectedStyle)
-        setSelectBattleshipStyle(shipDefaultStyle)
-        setSelectDestroyerStyle(shipDefaultStyle)
+        setSelectedShip("carrier")
+        setSelectCarrierStyle('shipSelectedStyle')
+        setSelectBattleshipStyle('shipDefaultStyle')
+        setSelectDestroyerStyle('shipDefaultStyle')
     }
     function highlightDestroyer(){
-        setSelectCarrierStyle(shipDefaultStyle)
-        setSelectBattleshipStyle(shipDefaultStyle)
-        setSelectDestroyerStyle(shipSelectedStyle)
+        setSelectedShip("destroyer")
+        setSelectCarrierStyle('shipDefaultStyle')
+        setSelectBattleshipStyle('shipDefaultStyle')
+        setSelectDestroyerStyle('shipSelectedStyle')
     }
     function hilightBattleship(){
-        setSelectCarrierStyle(shipDefaultStyle)
-        setSelectBattleshipStyle(shipSelectedStyle)
-        setSelectDestroyerStyle(shipDefaultStyle)
+        setSelectedShip("battleship")
+        setSelectCarrierStyle('shipDefaultStyle')
+        setSelectBattleshipStyle('shipSelectedStyle')
+        setSelectDestroyerStyle('shipDefaultStyle')
     }
 
     function handleShipPlacement(ship:string, rowIndex:any, colIndex: any) {
@@ -961,21 +967,21 @@ function clicked() {
     console.log('gameState.turn', gameState.turn)
 }
 
-useEffect(()=>{
-    if (firstClickedShips.carrier || firstClickedShips.battleship || firstClickedShips.destroyer){
-        switch (selectedShip){
-            case 'battleship': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.battleship = false //add styling here
-                break;
-            case 'carrier': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.carrier = false
-                break;
-            case 'destroyer': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.destroyer = false
-                break;
-        }
-    }
+// useEffect(()=>{
+//     if (firstClickedShips.carrier && gameState.carrierPlaced || gameState.battleShipsPlaced && firstClickedShips.battleship || gameState.destroyerPlaced && firstClickedShips.destroyer){
+//         switch (selectedShip){
+//             case 'battleship': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.battleship = false 
+//                 break;
+//             case 'carrier': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.carrier = false
+//                 break;
+//             case 'destroyer': setGameGridCursor({cursor: 'pointer'}), firstClickedShips.destroyer = false
+//                 break;
+//         }
+//     }
 
     
 
-}, [selectedShip])
+// }, [selectedShip])
 
     return(
 
@@ -1057,7 +1063,7 @@ useEffect(()=>{
             <CSSTransition in={!gameState.gameStarted} timeout={1000}
                         mountOnEnter={true} unmountOnExit={true} classNames="fade">
                 <>
-                    <div style={{ backgroundColor: '#7171ff', borderRadius: '20px', width: '97%', margin: '0% 1.5% 0% 1.5%' }}>
+                    <div style={{ backgroundColor: 'white', borderRadius: '20px', width: '97%', margin: '0% 1.5% 0% 1.5%' }}>
                         <div className='centerWrapper'>
                             <div className='center' style={{width: "80%"}}>
                                 <div className="shipSelection">
@@ -1071,11 +1077,11 @@ useEffect(()=>{
                                         className="defaultWrapper"
                                         onClick={handleCarrierClick}
                                     >
-                                        <div style={selectCarrierStyle}></div>
-                                        <div style={selectCarrierStyle}></div>
-                                        <div style={selectCarrierStyle}></div>
-                                        <div style={selectCarrierStyle}></div>
-                                        <div style={selectCarrierStyle}></div>
+                                        <div className={`${selectCarrierStyle}`}></div>
+                                        <div className={`${selectCarrierStyle}`}></div>
+                                        <div className={`${selectCarrierStyle}`}></div>
+                                        <div className={`${selectCarrierStyle}`}></div>
+                                        <div className={`${selectCarrierStyle}`}></div>                            
                                     </div>
                                     </div>
                                 </div>
@@ -1086,10 +1092,10 @@ useEffect(()=>{
                                         className="defaultWrapper"
                                         onClick={handleBattleShipClick}
                                     >
-                                        <div style={selectBattleshipStyle}></div>
-                                        <div style={selectBattleshipStyle}></div>
-                                        <div style={selectBattleshipStyle}></div>
-                                        <div style={selectBattleshipStyle}></div>
+                                        <div className={`${selectBattleshipStyle}`}></div>
+                                        <div className={`${selectBattleshipStyle}`}></div>
+                                        <div className={`${selectBattleshipStyle}`}></div>
+                                        <div className={`${selectBattleshipStyle}`}></div>
                                     </div>
                                     </div>
                                 </div>
@@ -1100,10 +1106,12 @@ useEffect(()=>{
                                         className="defaultWrapper"
                                         onClick={handleDestroyerClick}
                                     >
-                                        <div style={selectDestroyerStyle}></div>
-                                        <div style={selectDestroyerStyle}></div>
+                                        <div className={`${selectDestroyerStyle}`}></div>
+                                        <div className={`${selectDestroyerStyle}`}></div>
+                                        <div className="selectionAnimation"></div>
                                     </div>
                                     </div>
+                                    
                                 </div>
                                 <br />
                                 </div>
@@ -1173,6 +1181,7 @@ useEffect(()=>{
                     </div>
                 </>
             </CSSTransition>
+            
         </div>
     );
     
