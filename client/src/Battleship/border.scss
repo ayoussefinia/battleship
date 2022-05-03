@@ -21,7 +21,7 @@
     height: 38px;
     border-radius: 5px;
     overflow: hidden;
-    padding: 24px;
+    padding: 20px;
   
     &::before {
       content: '';
@@ -45,8 +45,8 @@
       content: '';
       position: absolute;
       z-index: -1;
-      left: 6px;
-      top: 6px;
+      left: 2px;
+      top: 3px;
       width: 35px;
       height: 35px;
       background: black;
