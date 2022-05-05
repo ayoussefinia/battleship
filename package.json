@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@fortawesome/react-fontawesome": "^0.1.18"
+    "@fortawesome/react-fontawesome": "^0.1.18",
+    "@types/react-transition-group": "^4.4.4",
+    "sass": "^1.51.0"
   }
 }
