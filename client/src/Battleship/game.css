@@ -1,0 +1,236 @@
+body {
+    min-height: 100vh;
+  }
+  
+  /* wrappers */
+  .centerWrapper {
+    display: flex;
+    width: 100%;
+    position: relative;
+  }
+  
+  .center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .centerWrapper h3 {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .centerWrapper img {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* game grid */
+  .gameGridStyles {
+    height: 336px;
+    width: 336px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    transition: all 0.4s ease;
+  }
+  
+  /* animations */
+  .fade-enter {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  
+  .fade-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 500ms, transform 500ms;
+  }
+  
+  .fade-exit-active {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 500ms, transform 500ms;
+  }
+  
+  .highlightBoard::before{
+    content: attr(display-content);
+    font-size:20px;
+    color:white;
+  }
+  
+  /* ship selection area */
+  .bottomDiv div{
+    margin-bottom:5px;
+  }
+  
+  .defaultWrapper {
+    display: flex;
+    width: 100%;
+    position: relative;
+  }
+  
+  .shipDefaultStyle {
+    background: black;
+    width: 38px;
+    height: 38px;
+    margin-right: 3px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: '';
+  }
+  
+  .shipSelection {
+    margin-right: 8px;
+    padding-top: 10px;
+    position:relative;
+  }
+  
+  .manipulateTitle {
+    height: 15%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 17px;
+  }
+  
+  .manipulateShipPanel {
+    width: 120px;
+    height: 160px;
+    margin-top: 10px;
+    padding-bottom: 8px;
+    margin-right: 3px;
+    border: 2px solid black;
+    border-radius: 10px;
+  }
+  
+  .manipulateShipPanel div:not(:first-child) {
+    font-size: 23px;
+  }
+  
+  .startGameBtn {
+    background-color: #74acd6;
+    color: white;
+    width: 100%;
+    height: 30px;
+    font-size: 22px;
+    margin: 10px;
+    border-radius: 30px;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  /* position ship styling */
+  .arrowUpContainer {
+    height: 20%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .arrowLeftContainer {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .arrowRightContainer {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .leftAndRightContainer {
+    display: flex;
+    width: 100%;
+  }
+  
+  .arrowDownContainer {
+    height: 20%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .rotateLeftAndRightContainer {
+    height: 25%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .rotateLeftContainer {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .arrowStyles {
+    cursor: pointer;
+  }
+  
+  .buttonPanelContainer {
+    display: flex;
+  }
+  
+  /* misc */
+  .abs {
+    position: absolute
+  }
+  
+  .noSelect {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+                                      supported by Chrome, Edge, Opera and Firefox */
+  }
+  
+  /* media queries for smaller screens */
+  @media screen and (max-width: 360px) {
+    .shipSelection {
+      text-align: center;
+    }
+  
+    .centerWrapper {
+      display: block;
+      width: 100%;
+      position: relative;
+    }
+  
+    .shipSelectedStyle:first-child,
+    .shipDefaultStyle:first-child {
+      margin-left: auto;
+    }
+  
+    .shipSelectedStyle:last-child,
+    .shipDefaultStyle:last-child {
+      margin-right: auto !important;
+    }
+  
+    .manipulateShipPanel {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }

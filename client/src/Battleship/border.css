@@ -1,0 +1,53 @@
+.shipSelectedStyle,
+.shipSelectedStyle::before,
+.shipSelectedStyle::after {
+  box-sizing: border-box;
+}
+
+.shipSelectedStyle{
+    margin-right:3px;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+.shipSelectedStyle {
+  position: relative;
+  z-index: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 5px;
+  overflow: hidden;
+  padding: 20px;
+}
+.shipSelectedStyle::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+  background-repeat: no-repeat;
+  background-size: 50% 50%, 50% 50%;
+  background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+  background-image: linear-gradient(#4dd4f3, #4dd4f3),
+  linear-gradient(#377af5, #377af5), 
+    linear-gradient(#4dd4f3, #4dd4f3),
+    linear-gradient(#377af5, #377af5);
+  animation: rotate 4s linear infinite;
+}
+.shipSelectedStyle::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 2px;
+  top: 3px;
+  width: 35px;
+  height: 35px;
+  background: black;
+  border-radius: 5px;
+}
