@@ -100,15 +100,16 @@ body {
   
   .manipulateShipPanel {
     width: 120px;
-    height: 160px;
+    height: 144px;
     margin-top: 10px;
     padding-bottom: 8px;
-    margin-right: 3px;
+    margin-left: auto;
+    margin-right: auto;
     border: 2px solid black;
     border-radius: 10px;
   }
   
-  .manipulateShipPanel div:not(:first-child) {
+  .manipulateShipPanel div {
     font-size: 23px;
   }
   
@@ -131,6 +132,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 8px;
   }
   
   .arrowLeftContainer {
@@ -183,7 +185,7 @@ body {
   }
   
   .buttonPanelContainer {
-    display: flex;
+    
   }
   
   /* misc */
@@ -232,5 +234,11 @@ body {
     .manipulateShipPanel {
       margin-left: auto;
       margin-right: auto;
+    }
+  }
+  @media screen and (min-width: 361px) and (max-width: 400px) {
+    .manipulateShipPanel {
+      margin-left: auto;
+      margin-right: 3px;
     }
   }
